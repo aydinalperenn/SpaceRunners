@@ -11,9 +11,9 @@ public class PlayerController : MonoBehaviour
     public float normalRunningSpeed;
     public float xSpeed;
     public float limitX;
+    [SerializeField] private GameManager gameManager;
 
 
-    public GameManager gm;
 
     public bool isGameContinue;
 
@@ -30,6 +30,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (!gameManager.isStarted)
+        {
+            return;
+        }
+
+
         if (isGameContinue)
         {
             SwipeCheck();

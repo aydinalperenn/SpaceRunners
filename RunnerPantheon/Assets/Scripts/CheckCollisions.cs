@@ -5,12 +5,10 @@ using TMPro;
 
 public class CheckCollisions : MonoBehaviour
 {
-    public GameObject btn_restart;
-    public GameObject btn_continue;
-    public GameObject btn_menu;
-    public GameObject finishText;
-    public GameObject imageFinishText;
-    public TextMeshProUGUI text_finishText;
+    public GameObject rankText;
+    public GameObject endPanel;
+    public GameObject inGameRanking;
+    public TextMeshProUGUI text_rankText;
     public GameObject stopLineZ;
 
 
@@ -33,6 +31,15 @@ public class CheckCollisions : MonoBehaviour
 
     Rigidbody rb;
 
+    private bool playerFounded;
+    private int rank = 0;
+    private int highScore;
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI highScoreText;
+    [SerializeField] private GameObject highScoreBroken;
+
+    [SerializeField] private GameManager gm;
+
 
     private void Start()
     {
@@ -51,6 +58,8 @@ public class CheckCollisions : MonoBehaviour
         ig = FindObjectOfType<InGameRanking>();
 
         rb = GetComponent<Rigidbody>();
+
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -75,21 +84,46 @@ public class CheckCollisions : MonoBehaviour
 
         if (other.CompareTag("FinishPoint"))
         {
-            PlayerFinished();
-            if(ig.namesTxt[6].text == "Siz")
+            if (gm.isStarted)
             {
-                Debug.Log("Congrats!");
-                btn_continue.SetActive(true);
-                text_finishText.text = "Congratulations!";
-            }
-            else
-            {
-                Debug.Log("You Lose!");
-                btn_restart.SetActive(true);
-                text_finishText.text = "Game Over!";
-            }
+                gm.isStarted = false;
 
-            PlayerFinishedUI();
+                PlayerFinished();
+
+                gm.endList.Add("You");
+
+
+                
+
+                for (int i = 0; i < gm.endList.Count; i++)
+                {
+                    if (gm.endList[i] == "You")
+                    {
+                        rank = i+1;
+                        playerFounded = true;
+                        break;
+                    }
+                }
+
+
+                if (!playerFounded)
+                {
+                    rank = 7;
+                }
+
+                score += (80 - rank * 10);
+
+                if (score > highScore)
+                {
+                    PlayerPrefs.SetInt("HighScore", score);
+                    PlayerFinishedUI(true);
+                }
+                else
+                {
+                    PlayerFinishedUI(false);
+                }
+            }
+            
         }
     }
 
@@ -97,7 +131,6 @@ public class CheckCollisions : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            Debug.Log("Çarptýn babba!");
             this.transform.position = startingPos;
         }
     }
@@ -135,6 +168,7 @@ public class CheckCollisions : MonoBehaviour
 
     void PlayerFinished()
     {
+
         playerControllerScript.runningSpeed = 0f;
         rb.velocity = Vector3.zero;
         playerControllerScript.isGameContinue = false;
@@ -143,20 +177,33 @@ public class CheckCollisions : MonoBehaviour
         rb.isKinematic = true;
     }
     
-    void PlayerFinishedUI()
+    void PlayerFinishedUI(bool broken)
     {
-        imageFinishText.SetActive(true);
-        finishText.SetActive(true);
-        btn_menu.SetActive(true);
+        inGameRanking.SetActive(false);
+
+        text_rankText.text = "Your Rank: " + rank;
+        scoreText.text = "Total Score: " + score.ToString();
+        highScoreText.text = "Highscore: " + highScore.ToString();
+
+        if (broken)
+        {
+            highScoreBroken.SetActive(true);
+        }
+        else
+        {
+            highScoreBroken.SetActive(false);
+        }
+
+
+        endPanel.SetActive(true);
+
+        
     }
 
     void PlayerStartUI()
     {
-        finishText.SetActive(false);
-        imageFinishText.SetActive(false);
-        btn_restart.SetActive(false);
-        btn_continue.SetActive(false);
-        btn_menu.SetActive(false);
+        endPanel.SetActive(false);
+
     }
 
 

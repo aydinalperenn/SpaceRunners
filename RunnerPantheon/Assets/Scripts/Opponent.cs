@@ -17,6 +17,11 @@ public class Opponent : MonoBehaviour
 
     Rigidbody rb;
 
+    bool isFinished = false;
+
+
+    [SerializeField] private GameManager gameManager;
+
 
     void Start()
     {
@@ -37,6 +42,11 @@ public class Opponent : MonoBehaviour
 
     void Update()
     {
+        if (!gameManager.isStarted)
+        {
+            return;
+        }
+
         opponentAgent.SetDestination(target.transform.position);
     }
 
@@ -64,7 +74,11 @@ public class Opponent : MonoBehaviour
 
         if (other.CompareTag("FinishPoint"))
         {
-            OpponentFinished();
+            if (!isFinished)
+            {
+                isFinished = true;
+                OpponentFinished();
+            }
         }
     }
 
@@ -94,6 +108,8 @@ public class Opponent : MonoBehaviour
 
     void OpponentFinished()
     {
+        gameManager.endList.Add(this.gameObject.name);
+
         opponentAgent.speed = 0f;
         opponentAgent.acceleration = 0f;
         rb.velocity = Vector3.zero;
